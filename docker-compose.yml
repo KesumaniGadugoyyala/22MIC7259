@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: campus-postgres
+    environment:
+      POSTGRES_DB: campus_notifications
+      POSTGRES_USER: campus
+      POSTGRES_PASSWORD: campus
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: campus-redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: campus-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: campus-backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/campus_notifications
+      DB_USER: campus
+      DB_PASSWORD: campus
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBIT_HOST: rabbitmq
+      RABBIT_PORT: 5672
+      RABBIT_USER: guest
+      RABBIT_PASSWORD: guest
+      MOCK_JWT_ENABLED: true
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: campus-frontend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8080
+      NEXT_PUBLIC_WS_URL: http://backend:8080/ws
+      NEXT_PUBLIC_STUDENT_ID: S-1001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

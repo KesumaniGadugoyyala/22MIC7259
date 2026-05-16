@@ -1,0 +1,14 @@
+node_modules/
+.next/
+frontend/.next/
+frontend/node_modules/
+frontend/.env.local
+frontend/.env
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+.idea/
+.vscode/
+.DS_Store
+*.log
